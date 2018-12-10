@@ -1,9 +1,9 @@
 <?php
 
 return [
-    'img_prefix' => 'https://share.bujxu.com/sharefavorite/public/static/upload/image/',
+    'img_prefix' => 'https://express.bujxu.com/express/public/static/upload/image/',
     'token_expire_in' => 7200,
-    'web_url' => 'https://share.bujxu.com/sharefavorite/', 
+    'web_url' => 'https://express.bujxu.com/express/', 
     'upload_config' => 
     array (
       'allowExts' => 
