@@ -5,29 +5,29 @@ use \think\Db;
 
 class Order
 {
-    protected $oProducts;
-    protected $products;
-    protected $uid;
+    public $input;
+    public $products;
+    public $uid;
 
-    public function place($uid, $oProducts)
+    public function place($uid, $input)
     {
-        $this->oProducts = $oProducts;
+        $this->input = $input;
         $this->uid = $uid;
-        $this->products = $this->getProductsByOrder($oProducts);
-        $status = $this->getOrderStatus();
-        if (!$status['pass'])
-        {
-            $status['order_id'] = -1;
-            return $status;
-        }
+        // $this->products = $this->getProductsByOrder($input);
+        // $status = $this->getOrderStatus();
+        // if (!$status['pass'])
+        // {
+        //     $status['order_id'] = -1;
+        //     return $status;
+        // }
 
-        $orderSnap = $this->snapOrder($status);
-        $order = $this->createOrder($orderSnap);
+        // $orderSnap = $this->snapOrder($status);
+        $order = $this->createOrder();
         $order['pass'] = true;
         return $order;
     }
 
-    private function createOrder($snap)
+    public function createOrder()
     {
         Db::startTrans();
         try
@@ -36,24 +36,29 @@ class Order
             $order = new \app\api\model\Order();
             $order->user_id = $this->uid;
             $order->order_no = $orderNo;
-            $order->total_price = $snap['orderPrice'];
-            $order->total_count = $snap['totalCount'];
-            $order->snap_img = $snap['snapImg'];
-            $order->snap_name = $snap['snapName'];
-            $order->snap_address = $snap['snapAddress'];
-            $order->snap_items = json_encode($snap['pStatus']);
-
+            $order->price = $this->input['price'];
+            $order->receiverAddressDetail = $this->input['receiverAddressDetail'];
+            $order->receiverHouseNumber = $this->input['receiverHouseNumber'];
+            $order->receiverContact = $this->input['receiverContact'];
+            $order->receiverPhoneNumber = $this->input['receiverPhoneNumber'];
+            $order->senderAddressDetail = $this->input['senderAddressDetail'];
+            $order->senderHouseNumber = $this->input['senderHouseNumber'];
+            $order->senderContact = $this->input['senderContact'];
+            $order->senderPhoneNumber = $this->input['senderPhoneNumber'];
+            $order->dataInformation = $this->input['dataInformation'];
+            $order->remark = $this->input['remark'];
+            $order->status = 0;
             $order->save();
 
             $orderID = $order->id;
             $create_time = $order->create_time;
 
-            foreach ($this->oProducts as &$p)
-            {
-                $p['order_id'] = $orderID;
-            }
-            $orderProduct = new \app\api\model\OrderProduct();
-            $orderProduct->saveAll($this->oProducts);
+            // foreach ($this->input as &$p)
+            // {
+            //     $p['order_id'] = $orderID;
+            // }
+            // $orderProduct = new \app\api\model\OrderProduct();
+            // $orderProduct->saveAll($this->input);
             Db::commit();
             return [
                 'order_no' => $orderNo,
@@ -78,30 +83,30 @@ class Order
         return $orderSn;
     }
 
-    private function snapOrder($status)
-    {
-        $snap = [
-            'orderPrice' => 0,
-            'totalCount' => 0,
-            'pStatus' => [],
-            'snapAddress' => null,
-            'snapName' => '',
-            'snapImg' => '',
-        ];
+    // public function snapOrder($status)
+    // {
+    //     $snap = [
+    //         'orderPrice' => 0,
+    //         'totalCount' => 0,
+    //         'pStatus' => [],
+    //         'snapAddress' => null,
+    //         'snapName' => '',
+    //         'snapImg' => '',
+    //     ];
 
-        $snap['orderPrice'] = $status['orderPrice'];
-        $snap['totalCount'] = $status['totalCount'];
-        $snap['pStatus'] = $status['pStatusArray'];
-        $snap['snapAddress'] = \json_encode($this->getUserAddress());
-        $snap['snapName'] = $this->products[0]['name'];
-        $snap['snapImg'] = $this->products[0]['main_img_url'];
+    //     $snap['orderPrice'] = $status['orderPrice'];
+    //     $snap['totalCount'] = $status['totalCount'];
+    //     $snap['pStatus'] = $status['pStatusArray'];
+    //     $snap['snapAddress'] = \json_encode($this->getUserAddress());
+    //     $snap['snapName'] = $this->products[0]['name'];
+    //     $snap['snapImg'] = $this->products[0]['main_img_url'];
 
-        return $snap;
-    }
+    //     return $snap;
+    // }
 
 
 
-    private function getUserAddress()
+    public function getUserAddress()
     {
         $userAddress = \app\api\model\UserAddress::where('user_id', '=', $this->uid)->find();
         if (!$userAddress)
@@ -115,33 +120,33 @@ class Order
         return $userAddress->toArray();
     }
 
-    private function getOrderStatus()
-    {
-        $status = [
-            'pass' => true,
-            'orderPrice' => 0,
-            'pStatusArray' => [],
-            'totalCount' => 0,
+    // public function getOrderStatus()
+    // {
+    //     $status = [
+    //         'pass' => true,
+    //         'orderPrice' => 0,
+    //         'pStatusArray' => [],
+    //         'totalCount' => 0,
 
-        ];
+    //     ];
 
-        foreach ($this->oProducts as $oProudct)
-        {
-            $pStatus = $this->getProductStatus($oProudct['product_id'], $oProudct['count'], $this->products);
-            if (!$pStatus['haveStock'])
-            {
-                $status['pass'] = false;
-            }
+    //     foreach ($this->input as $oProudct)
+    //     {
+    //         $pStatus = $this->getProductStatus($oProudct['product_id'], $oProudct['count'], $this->products);
+    //         if (!$pStatus['haveStock'])
+    //         {
+    //             $status['pass'] = false;
+    //         }
 
-            $status['orderPrice'] += $pStatus['totalPrice'];
-            $status['totalCount'] += $pStatus['count'];
-            array_push($status['pStatusArray'], $pStatus);
-        }
+    //         $status['orderPrice'] += $pStatus['totalPrice'];
+    //         $status['totalCount'] += $pStatus['count'];
+    //         array_push($status['pStatusArray'], $pStatus);
+    //     }
 
-        return $status;
-    }
+    //     return $status;
+    // }
 
-    private function getProductStatus($oPID, $oCount, $products)
+    public function getProductStatus($oPID, $oCount, $products)
     {
         $pIndex = -1;
         $pStatus = [
@@ -181,15 +186,15 @@ class Order
             return $pStatus;
         }
     }
-    private function getProductsByOrder($oProducts)
-    {
-        $oPIDs = [];
-        foreach ($oProducts as $item) {
-            array_push($oPIDs, $item['product_id']);
-        }
+    // public function getProductsByOrder($input)
+    // {
+    //     $oPIDs = [];
+    //     foreach ($input as $item) {
+    //         array_push($oPIDs, $item['product_id']);
+    //     }
 
-        $products = \app\api\model\Product::all($oPIDs)->visible(['id', 'price', 'stock', 'name', 'main_img_url'])->toArray();
+    //     $products = \app\api\model\Product::all($oPIDs)->visible(['id', 'price', 'stock', 'name', 'main_img_url'])->toArray();
 
-        return $products;
-    }
+    //     return $products;
+    // }
 }

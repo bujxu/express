@@ -11,6 +11,33 @@ class Address extends \app\api\controller\BaseController
         'checkPrimaryScope' => ['only' => 'createOrUpdateAddress']
     ];
 
+    public function commitAddress()
+    {
+        $data = input('post.');
+        
+        $uid = TokenService::getCurrentUid();
+        $address = new UserAddress;
+        $address->data([
+            "user_id" => $uid,
+            'name' => $data['contact'],
+            'house_number' => $data['houseNumber'],
+            'detail_address' => $data['addressDetail'],
+            'mobile' => $data['phoneNumber'],
+            'who' => $data['who'],
+        ]);
+        $address->save();
+
+    }
+
+    public function getAddress()
+    {
+        $who = input('get.who');
+        $uid = TokenService::getCurrentUid();
+        $result = UserAddress::all(['user_id' => $uid, 'who' => $who])->toArray();
+        
+        
+        return $result;
+    }
 
     public function createOrUpdateAddress()
     {

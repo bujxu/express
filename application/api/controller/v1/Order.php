@@ -3,6 +3,7 @@
 namespace app\api\controller\v1;
 use app\api\service\Token as TokenService;
 use app\api\service\Order as OrderService;
+use app\api\model\Order as OrderModel;
 class Order extends \app\api\controller\BaseController
 {
 
@@ -13,13 +14,20 @@ class Order extends \app\api\controller\BaseController
 
     public function placeOrder()
     {
-        (new \app\api\validate\OrderPlace)->goCheck();
-        $products = input('post.products/a');
+        // (new \app\api\validate\OrderPlace)->goCheck();
+        $input = input('post.');
         $uid = TokenService::getCurrentUid();
         
         $order = new OrderService();
-        $status = $order->place($uid, $products);
+        $status = $order->place($uid, $input);
         
         return $status;
+    }
+    
+    public function getOrderDetail()
+    {
+        $orderId = input('get.orderId');
+        $result = OrderModel::get(['id' => $orderId])->toArray();
+        return $result;
     }
 }
