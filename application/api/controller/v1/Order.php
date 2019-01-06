@@ -30,4 +30,16 @@ class Order extends \app\api\controller\BaseController
         $result = OrderModel::get(['id' => $orderId])->toArray();
         return $result;
     }
+    
+    public function getOrder()
+    {
+        $status = input('get.status');
+        $uid = TokenService::getCurrentUid();
+        if ($status == 10)
+            $result = OrderModel::where(['user_id' => $uid])->select()->toArray();
+        else
+            $result = OrderModel::where(['user_id' => $uid, 'status' => $status])->select()->toArray();
+        
+        return $result;
+    }
 }

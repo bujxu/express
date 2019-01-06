@@ -82,6 +82,20 @@ class User
         return $images;
     }
 
+    public function login()
+    {
+        $usrname = input('post.usrname');
+        $passwd = input('post.passwd');
+        if ($usrname == 'admin' && $passwd == '123456')
+        {
+            return 0;
+        }
+        else 
+        {
+            return -1;
+        }
+    }
+
     public function editCommit()
     {
 

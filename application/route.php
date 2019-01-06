@@ -48,6 +48,8 @@ Route::post('api/:version/address', 'api/:version.Address/createOrUpdateAddress'
 
 Route::post('api/:version/order', 'api/:version.Order/placeOrder');
 Route::get('api/:version/order/getOrderDetail', 'api/:version.Order/getOrderDetail');
+Route::get('api/:version/order/getOrder', 'api/:version.Order/getOrder');
+
 Route::post('api/:version/decode/share', 'api/:version.Decode/decodeShare');
 Route::post('api/:version/decode/user', 'api/:version.Decode/decodeUser');
 
@@ -64,3 +66,5 @@ Route::get('api/:version/group/getCommit', 'api/:version.Group/getCommit');
 // Route::get('api/:version/Address/second', 'api/:version.Address/second');
 Route::post('api/:version/address/commitAddress', 'api/:version.Address/commitAddress');
 Route::get('api/:version/address/getAddress', 'api/:version.Address/getAddress');
+Route::post('api/:version/user/login', 'api/:version.User/login');
+
